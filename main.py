@@ -1,13 +1,12 @@
-from tkinter import ttk
-
+import sys
+from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QLineEdit, QVBoxLayout, QPushButton, QComboBox, QFileDialog
 from pytube import YouTube
 from tqdm import tqdm
-from threading import Thread
-import tkinter as tk
-import logging
-import click
 import os
+import logging
+from threading import Thread
 
+# Set up logging
 logging.basicConfig(filename='download.log', level=logging.INFO)
 
 
@@ -17,76 +16,89 @@ def download_with_progress(stream, output):
         progress_bar.update(progress_bar.total - progress_bar.n)
 
 
-# Commented code allows to use command line instead of GUI.
-# @click.command()
-# @click.argument("link", required=True)
-# @click.option("--file_format", default="audio", help="Specify the format (audio, video). Default is audio.")
-# @click.option('--output', default='Download', help='Specify the output folder.')
-def download_youtube(link, file_format, output):
+def download_video(link, selected_option, output_folder):
     try:
-        os.makedirs(output, exist_ok=True)
+        # Create output folder if it doesn't exist
+        os.makedirs(output_folder, exist_ok=True)
 
+        # Download video
         yt = YouTube(link)
-        print(f"Title: {yt.title}")
-        print(f"Views: {yt.views}")
-
-        if file_format == "audio":
-            stream = yt.streams.filter(only_audio=True).first()
-        elif file_format == "video":
+        stream = None
+        if selected_option == 'Video':
             stream = yt.streams.get_highest_resolution()
+        elif selected_option == 'Audio':
+            stream = yt.streams.filter(only_audio=True).first()
         else:
-            stream = yt.streams.first()
+            logging.error("Invalid selection")
 
-        print("Downloading...")
-        download_with_progress(stream, output)
-        logging.info(f"Downloaded: {yt.title}")
-        click.echo("Download complete.")
+        if stream:
+            # Download with progress bar
+            download_with_progress(stream, output_folder)
+            logging.info(f"Downloaded: {yt.title}")
+        else:
+            logging.error(f"No available stream for {selected_option}")
 
     except Exception as e:
         logging.error(f"Error downloading {link}: {str(e)}")
-        click.echo(f"Error: {str(e)}")
 
 
-class YouTubeDownloaderApp:
-    def __init__(self, master):
-        self.master = master
-        master.title("YouTube Downloader")
+class YouTubeDownloaderApp(QWidget):
+    def __init__(self):
+        super().__init__()
 
-        self.link_label = tk.Label(master, text="YouTube Video URL:")
-        self.link_label.pack()
+        self.init_ui()
 
-        self.link_entry = tk.Entry(master, width=50)
-        self.link_entry.pack()
+    def init_ui(self):
+        self.setWindowTitle("YouTube Downloader")
 
-        self.option_label = tk.Label(master, text="Download Option:")
-        self.option_label.pack()
+        self.link_label = QLabel("YouTube Video URL:")
+        self.link_entry = QLineEdit()
 
+        self.option_label = QLabel("Download Option:")
         self.options = ['Video', 'Audio']
-        self.selected_option = tk.StringVar()
-        self.option_combobox = ttk.Combobox(master, textvariable=self.selected_option, values=self.options)
-        self.option_combobox.set(self.options[0])  # Set default value
-        self.option_combobox.pack()
+        self.option_combobox = QComboBox()
+        self.option_combobox.addItems(self.options)
 
-        self.output_label = tk.Label(master, text="Output Folder:")
-        self.output_label.pack()
+        self.output_label = QLabel("Output Folder:")
+        self.output_entry = QLineEdit()
+        self.output_button = QPushButton("Select Folder")
+        self.output_button.clicked.connect(self.select_folder)
 
-        self.output_entry = tk.Entry(master, width=50)
-        self.output_entry.insert(0, "Download")
-        self.output_entry.pack()
+        self.download_button = QPushButton("Download")
+        self.download_button.clicked.connect(self.download)
 
-        self.download_button = tk.Button(master, text="Download", command=self.download)
-        self.download_button.pack()
+        layout = QVBoxLayout()
+        layout.addWidget(self.link_label)
+        layout.addWidget(self.link_entry)
+        layout.addWidget(self.option_label)
+        layout.addWidget(self.option_combobox)
+        layout.addWidget(self.output_label)
+        layout.addWidget(self.output_entry)
+        layout.addWidget(self.output_button)
+        layout.addWidget(self.download_button)
+
+        self.setLayout(layout)
+
+    def select_folder(self):
+        folder = QFileDialog.getExistingDirectory(self, "Select Folder")
+        if folder:
+            self.output_entry.setText(folder)
 
     def download(self):
-        link = self.link_entry.get()
-        selected_option = self.selected_option.get()
-        output = self.output_entry.get()
+        link = self.link_entry.text()
+        selected_option = self.option_combobox.currentText()
+        output_folder = self.output_entry.text()
 
-        download_thread = Thread(target=download_youtube, args=(link, selected_option, output))
+        download_thread = Thread(target=download_video, args=(link, selected_option, output_folder))
         download_thread.start()
 
 
+def main():
+    app = QApplication(sys.argv)
+    window = YouTubeDownloaderApp()
+    window.show()
+    sys.exit(app.exec())
+
+
 if __name__ == "__main__":
-    root = tk.Tk()
-    app = YouTubeDownloaderApp(root)
-    root.mainloop()
+    main()
