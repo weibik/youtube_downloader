@@ -1,3 +1,5 @@
+# Tool to download youtube videos in various formats.
+
 **Prerequisites**
 - poetry
 
