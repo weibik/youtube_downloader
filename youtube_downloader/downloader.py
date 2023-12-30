@@ -23,7 +23,6 @@ def download_file(link, selected_option, output_folder):
             logging.error("Invalid selection")
 
         if stream:
-            # Download with progress bar
             download_with_progress(stream, output_folder)
             logging.info(f"Downloaded: {yt.title}")
         else:
