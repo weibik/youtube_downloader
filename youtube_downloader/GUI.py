@@ -76,7 +76,7 @@ class YouTubeDownloaderApp(QWidget):
         link = self.link_entry.text()
         selected_option = self.option_combobox.currentText()
         output_folder = self.output_entry.text()
-        selected_resolution = self. resolutions_list.itemClicked
+        selected_resolution = self.resolutions_list.itemClicked
 
         download_thread = Thread(target=download_file, args=(link, selected_option, output_folder, selected_resolution))
         download_thread.start()
