@@ -17,7 +17,7 @@ def download_file(link, selected_option, output_folder, resolution):
         stream = None
 
         if selected_option == "Video":
-            stream = yt.streams.filter(type="video", resolution=resolution).first()
+            stream = yt.streams.filter(type="video", resolution=resolution, file_extension="mp4").first()
         elif selected_option == "Audio":
             stream = yt.streams.filter(only_audio=True).first()
         else:
@@ -29,7 +29,8 @@ def download_file(link, selected_option, output_folder, resolution):
         else:
             logging.error(f"No available stream for {selected_option} and resolution {resolution}")
     except Exception as e:
-        logging.error(f"Error downloading {link}: {str(e)}")
+        print(f"Error getting available resolutions: {str(e)}")
+        return []
 
 
 def get_available_resolutions(link, selected_option):
