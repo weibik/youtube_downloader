@@ -17,8 +17,5 @@
 3. Run program
    poetry run python youtube_downloader/main.py 
 
-**Example**
-poetry run python main.py --file_format video --output test_folder "https://www.youtube.com/watch?v=79V37mWV6nM&ab_channel=MagiaNatury"
-
 ![yt_downloader](https://github.com/weibik/youtube_downloader/assets/57102801/420c84f7-f122-40fe-84d1-3d6dc54c6c89)
 
