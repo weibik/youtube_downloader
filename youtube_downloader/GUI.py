@@ -1,5 +1,16 @@
-from PyQt6.QtWidgets import (QApplication, QWidget, QLabel, QLineEdit, QVBoxLayout, QPushButton, QComboBox, QFileDialog,
-                             QListWidget, QListWidgetItem)
+from PyQt6.QtWidgets import (
+    QApplication,
+    QWidget,
+    QLabel,
+    QLineEdit,
+    QVBoxLayout,
+    QPushButton,
+    QComboBox,
+    QFileDialog,
+    QListWidget,
+    QListWidgetItem,
+    QHBoxLayout,
+)
 from downloader import download_file, download_with_progress, get_available_resolutions
 from threading import Thread
 
@@ -18,14 +29,18 @@ class YouTubeDownloaderApp(QWidget):
         self.link_entry.editingFinished.connect(self.show_resolution_dialog)
 
         self.option_label = QLabel("Download Option:")
-        self.options = ['Video', 'Audio']
+        self.options = ["Video", "Audio"]
         self.option_combobox = QComboBox()
         self.option_combobox.addItems(self.options)
 
         self.output_label = QLabel("Output Folder:")
         self.output_entry = QLineEdit()
-        self.output_button = QPushButton("Select Folder")
+        self.output_button = QPushButton("...", self)
         self.output_button.clicked.connect(self.select_folder)
+
+        self.output_layout = QHBoxLayout()
+        self.output_layout.addWidget(self.output_entry)
+        self.output_layout.addWidget(self.output_button)
 
         self.resolutions_label = QLabel("Available Resolutions:")
         self.resolutions_list = QListWidget()
@@ -39,8 +54,7 @@ class YouTubeDownloaderApp(QWidget):
         layout.addWidget(self.option_label)
         layout.addWidget(self.option_combobox)
         layout.addWidget(self.output_label)
-        layout.addWidget(self.output_entry)
-        layout.addWidget(self.output_button)
+        layout.addLayout(self.output_layout)
         layout.addWidget(self.resolutions_label)
         layout.addWidget(self.resolutions_list)
         layout.addWidget(self.download_button)
@@ -78,5 +92,8 @@ class YouTubeDownloaderApp(QWidget):
         output_folder = self.output_entry.text()
         selected_resolution = self.resolutions_list.itemClicked
 
-        download_thread = Thread(target=download_file, args=(link, selected_option, output_folder, selected_resolution))
+        download_thread = Thread(
+            target=download_file,
+            args=(link, selected_option, output_folder, selected_resolution),
+        )
         download_thread.start()
